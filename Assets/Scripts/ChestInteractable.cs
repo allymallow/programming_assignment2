@@ -3,37 +3,45 @@ using UnityEngine;
 
 public class ChestInteractable : MonoBehaviour, IInteractable
 {
-    [SerializeField] private Animator anim;
     [SerializeField] private Ease ease;
 
-    private int isOpenHash;
-    private Tween _loopTween;
+    [SerializeField] private Transform chestLid;
+    [SerializeField] private Vector3 chestLidRotation;
+    [SerializeField] private float chestLidDuration;
+    
     private Tween _collectTween;
+   private Tween _openLidTween;
+    private Tween _loopTween;
+    private int isOpenHash;
 
-    void Start()
+    private void Start()
     {
-        if(!anim) return;
 
-        isOpenHash = Animator.StringToHash("IsOpen");
+        _loopTween = transform.DOScale(1.6f, .2f).SetLoops(-1, LoopType.Yoyo).SetEase(ease)
+            .SetDelay(Random.Range(0.5f, 2.5f));
+    }
 
-        _loopTween = transform.DOScale(1.6f, .2f).SetLoops(-1, LoopType.Yoyo).SetEase(ease).SetDelay(Random.Range(0.5f, 2.5f));
+    private void OnDestroy()
+    {
+        DOTween.Kill(gameObject);
     }
 
     public void OnHoverIn()
     {
         Debug.Log("Interact in!");
-        anim?.SetBool(isOpenHash, true);
-        //open chest
         
+        //open chest
+        chestLid.DOLocalRotate(chestLidRotation, chestLidDuration).SetEase(ease);
+
         Toast.Instance.ShowToast("Press \"E\" to Interact");
     }
 
     public void OnHoverOut()
     {
-        anim?.SetBool(isOpenHash, false);
         //close chest
+      chestLid.DOLocalRotate(Vector3.zero, chestLidDuration).SetEase(ease);
         Debug.Log("Interact out!");
-        
+
         Toast.Instance.HideToast();
     }
 
@@ -41,16 +49,6 @@ public class ChestInteractable : MonoBehaviour, IInteractable
     {
         Debug.Log($"Interacted with {gameObject.name}");
 
-        _collectTween = transform.DOScale(0, .5f).SetEase(Ease.InBack).OnComplete(() =>
-        {
-            Destroy(gameObject);
-        });
-
-        
-    }
-
-    void OnDestroy()
-    {
-        DOTween.Kill(this.gameObject);
+        _collectTween = transform.DOScale(0, .5f).SetEase(Ease.InBack).OnComplete(() => { Destroy(gameObject); });
     }
 }
