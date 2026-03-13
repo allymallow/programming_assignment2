@@ -98,3 +98,20 @@ InitTestScene*.unity*
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 __MACOSX
+
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# Rider ignored files
+/modules.xml
+/.idea.programming_assignment2.iml
+/projectSettingsUpdater.xml
+/contentModel.xml
+
+# Editor-based HTTP Client requests
+/httpRequests/
+
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml

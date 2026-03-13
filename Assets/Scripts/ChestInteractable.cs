@@ -4,6 +4,7 @@ using UnityEngine;
 public class ChestInteractable : MonoBehaviour, IInteractable
 {
     [SerializeField] private Animator anim;
+    [SerializeField] private Ease ease;
 
     private int isOpenHash;
     private Tween _loopTween;
@@ -15,13 +16,14 @@ public class ChestInteractable : MonoBehaviour, IInteractable
 
         isOpenHash = Animator.StringToHash("IsOpen");
 
-        _loopTween = transform.DOScale(1.6f, .2f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutQuad).SetDelay(Random.Range(0.5f, 2.5f));
+        _loopTween = transform.DOScale(1.6f, .2f).SetLoops(-1, LoopType.Yoyo).SetEase(ease).SetDelay(Random.Range(0.5f, 2.5f));
     }
 
     public void OnHoverIn()
     {
         Debug.Log("Interact in!");
         anim?.SetBool(isOpenHash, true);
+        //open chest
         
         Toast.Instance.ShowToast("Press \"E\" to Interact");
     }
@@ -29,6 +31,7 @@ public class ChestInteractable : MonoBehaviour, IInteractable
     public void OnHoverOut()
     {
         anim?.SetBool(isOpenHash, false);
+        //close chest
         Debug.Log("Interact out!");
         
         Toast.Instance.HideToast();
