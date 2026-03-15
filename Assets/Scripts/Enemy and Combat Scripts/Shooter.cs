@@ -29,6 +29,8 @@ public class Shooter : MonoBehaviour
            
            //applying force
            _arrow.GetComponent<Rigidbody>().AddForce(shootForce * shootPoint.forward);
+           
+           Destroy(_arrow, 5f); //destroy the arrow after 5 seconds
         }
 
     
