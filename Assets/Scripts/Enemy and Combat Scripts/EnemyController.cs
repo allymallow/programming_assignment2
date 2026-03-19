@@ -1,4 +1,5 @@
 using DG.Tweening;
+using UnityEditor.UI;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour
@@ -10,8 +11,17 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotateSpeed;
     [SerializeField] private float jumpHeight;
-   
-    [SerializeField] private Transform player;
+
+    [SerializeField] private LayerMask PlayerLayer;
+
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (gameObject.CompareTag("Player"))
+        {
+            
+        }
+    }
     
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created

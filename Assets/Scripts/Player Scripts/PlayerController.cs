@@ -4,11 +4,23 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Movement")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float moveSpeed = 2;
+    [SerializeField] private float sprintSpeed;
     [SerializeField] private float rotationSpeed = 10;
     [SerializeField] private float gravity = -9.8f;
     [SerializeField] private float jumpVelocity = 10f;
+
+    [Header("Aim Movement")]
+    
+    [SerializeField] private float moveSpeedAimed = 2;
+    [SerializeField] private float rotationSpeedAimed = 10;
+    [SerializeField] private float sprintSpeedAimed;
+    [SerializeField] private Transform aimTrack;
+    [SerializeField] private float maxAimHeight;
+    [SerializeField] private float minAimHeight;
+    
 
     [Space(10)]
     [Header("Ground Check")]
@@ -18,8 +30,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
 
     public event Action OnJumpEvent;
+    public event Action<PlayerState> OnStateUpdated;
     
     private Vector2 _moveInput;
+    private Vector2 _lookInput;
     private Vector3 _camForward;
     private Vector3 _camRight;
     private Vector3 _moveDirection;
@@ -27,6 +41,10 @@ public class PlayerController : MonoBehaviour
     private Quaternion _targetRotation;
     private Vector3 _velocity;
     private bool _isGrounded;
+    private Vector3 _defaultAimTrackerPosition;
+    private Vector3 _tempAimTrackerPosition;
+
+    private PlayerState _currentState;
 
     public bool IsGrounded()
     {
@@ -37,17 +55,33 @@ public class PlayerController : MonoBehaviour
     {
         return _velocity;
     }
-
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         _characterController = GetComponent<CharacterController>();
+        
+        //set the default player state
+        _currentState = PlayerState.EXPLORE; // setting the current player state to explore at start
+        OnStateUpdated?.Invoke(_currentState); // invoking the current player state at start
+
+        //setting aim tracker position default to player position
+        _defaultAimTrackerPosition = aimTrack.localPosition;
     }
 
     // Update is called once per frame
     void Update()
     {
-        CalculateMovement();
+        if(_currentState == PlayerState.EXPLORE)
+        {
+            CalculateMovementExplore();
+            aimTrack.localPosition = _defaultAimTrackerPosition;
+        }
+        else if (_currentState == PlayerState.AIM)
+        {
+            CalculateMovementAim();
+            UpdateAimTrack();
+        }
         _characterController.Move(_velocity * Time.deltaTime);
     }
 
@@ -65,17 +99,38 @@ public class PlayerController : MonoBehaviour
         _moveInput = value.Get<Vector2>();
     }
 
+    public void OnLook(InputValue value)
+    {
+        _lookInput = value.Get<Vector2>();
+    }
+
     public void OnJump()
     {
         if(_isGrounded)
         {
-            Debug.Log("JUMP");
             _velocity.y = jumpVelocity;
             OnJumpEvent?.Invoke();
         }
     }
 
-    private void CalculateMovement()
+    public void OnAim(InputValue value)
+    {
+        //if aim input is pressed, change player state to "AIM", if not, player state = "EXPLORE"
+        _currentState = value.isPressed ? PlayerState.AIM : PlayerState.EXPLORE; 
+      
+
+        //snap player to face cam forward immediately when aiming to help awkward camera change
+        if (_currentState == PlayerState.AIM)
+        {
+            _camForward = playerCamera.transform.forward;
+            _camForward.y = 0;
+            _camForward.Normalize();
+            transform.rotation = Quaternion.LookRotation(_camForward);
+        } 
+        OnStateUpdated?.Invoke(_currentState);
+    }
+    
+    private void CalculateMovementExplore()
     {
         _camForward = playerCamera.transform.forward;
         _camRight = playerCamera.transform.right;
@@ -93,13 +148,34 @@ public class PlayerController : MonoBehaviour
         }
         
         //Calculate gravity
-        _velocity = Vector3.up * _velocity.y + _moveDirection * moveSpeed;
+        _velocity = Vector3.up * _velocity.y + moveSpeed * _moveDirection;
         _velocity.y += gravity * Time.deltaTime;
-
-        
         
     }
 
+    private void CalculateMovementAim()
+    {
+        //rotate the player around the Y axis based on X (horizontal) input
+        transform.Rotate(Vector3.up, rotationSpeedAimed * _lookInput.x * Time.deltaTime);
+        
+        //WASD relates to where player is currently facing
+        //Left/Right sideways strafe, forward/back moves along player's facing direction
+        _moveDirection = _moveInput.x * transform.right + _moveInput.y * transform.forward;
+        
+        _velocity = Vector3.up * _velocity.y + moveSpeedAimed * _moveDirection;
+        _velocity.y += gravity * Time.deltaTime;
+    }
+
+    private void UpdateAimTrack()
+    {
+        _tempAimTrackerPosition = aimTrack.localPosition; //current local position of aim tracker
+        // modify Y axis value based on look input
+        _tempAimTrackerPosition.y += _lookInput.y * rotationSpeedAimed * Time.deltaTime; 
+        //clamp aim tracker height 
+        _tempAimTrackerPosition.y = Mathf.Clamp(_tempAimTrackerPosition.y, minAimHeight, maxAimHeight);
+        aimTrack.localPosition = _tempAimTrackerPosition;
+    }
+    
     private void CheckGrounded()
     {
         _isGrounded = Physics.SphereCast(

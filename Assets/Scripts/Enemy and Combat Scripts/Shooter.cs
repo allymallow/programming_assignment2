@@ -3,35 +3,57 @@ using UnityEngine.InputSystem;
 
 public class Shooter : MonoBehaviour
 {
-    [Header("Shooter Settings")]
-    [SerializeField] private InputAction shootInput; // setting the input that allows player to shoot
-    [SerializeField] private Transform shootPoint; // where we are shooting the arrow from
-    [SerializeField] private GameObject shootObject; // what prefab we are using as a projectile
-    [SerializeField] private float shootForce; // how much force to use when shooting
+    [SerializeField] private InputAction shootInput;
+
+    [SerializeField] private Transform shootPoint;
+    [SerializeField] private Transform aimTrack;
+    [SerializeField] private GameObject shootObject;
+
+    [SerializeField] private float shootForce;
 
     private GameObject _arrow;
+    private Vector3 _shootDirection;
+    private PlayerState _currentState;
+    private PlayerController _playerController;
 
-    private void OnEnable()
+    void Awake()
+    {
+        _playerController = GetComponent<PlayerController>();
+    }
+
+    void OnEnable()
     {
         shootInput.Enable();
         shootInput.performed += Shoot;
+
+        _playerController.OnStateUpdated += StateUpdate;
+        
     }
 
-    private void OnDisable()
+    void StateUpdate(PlayerState state)
     {
-        shootInput.performed -= Shoot; 
+        _currentState = state;
     }
-    
-    private void Shoot(InputAction.CallbackContext context)
-        {
-            //creating a new arrow
-           _arrow = Instantiate(shootObject, shootPoint.position, shootPoint.rotation);
-           
-           //applying force
-           _arrow.GetComponent<Rigidbody>().AddForce(shootForce * shootPoint.forward);
-           
-           Destroy(_arrow, 5f); //destroy the arrow after 5 seconds
-        }
 
-    
+    void OnDisable()
+    {
+        shootInput.performed -= Shoot;
+        _playerController.OnStateUpdated -= StateUpdate;
+        
+    }
+
+    private void Shoot(InputAction.CallbackContext context)
+    {
+        if(_currentState != PlayerState.AIM) return;
+
+        //calculate the direction
+        _shootDirection = aimTrack.position - shootPoint.position;
+        _shootDirection.Normalize();
+
+        //create a new arrow
+        _arrow = Instantiate(shootObject, shootPoint.position, Quaternion.LookRotation(_shootDirection));
+
+        // apply a force
+        _arrow.GetComponent<Rigidbody>().AddForce(shootForce * _shootDirection, ForceMode.Impulse);
+    }
 }
