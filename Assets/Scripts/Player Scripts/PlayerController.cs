@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Player Movement")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float moveSpeed = 2;
     [SerializeField] private float rotationSpeed = 10;
@@ -16,17 +17,37 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundCheckDistance;
     [SerializeField] private float groundCheckRadius;
     [SerializeField] private LayerMask groundLayer;
+    
+    
+    [Header("Aim Movement")]
+    
+    [SerializeField] private float moveSpeedAimed = 2;
+    [SerializeField] private float rotationSpeedAimed = 10;
+    [SerializeField] private float sprintSpeedAimed;
+    [SerializeField] private Transform aimTrack;
+    [SerializeField] private float maxAimHeight;
+    [SerializeField] private float minAimHeight;
+
 
     public event Action OnJumpEvent;
+    public event Action<PlayerState> OnStateUpdated;
     
+    [Header("Camera")]
     private Vector2 _moveInput;
+
+    private Vector2 _lookInput;
     private Vector3 _camForward;
     private Vector3 _camRight;
     private Vector3 _moveDirection;
     private CharacterController _characterController;
+    
+    
     private Quaternion _targetRotation;
     private Vector3 _velocity;
     private bool _isGrounded;
+    
+    
+    private PlayerState _currentState;
 
     public bool IsGrounded()
     {
@@ -42,6 +63,11 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         _characterController = GetComponent<CharacterController>();
+
+        _currentState = PlayerState.EXPLORE; // setting the player's default state
+        OnStateUpdated?.Invoke(_currentState);
+
+
     }
 
     // Update is called once per frame
@@ -72,6 +98,20 @@ public class PlayerController : MonoBehaviour
             Debug.Log("JUMP");
             _velocity.y = jumpVelocity;
             OnJumpEvent?.Invoke();
+        }
+    }
+
+    public void OnAim(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            _currentState = PlayerState.AIM;
+            OnStateUpdated?.Invoke(_currentState);
+        }
+        else
+        {
+            _currentState = PlayerState.EXPLORE;
+            OnStateUpdated?.Invoke(_currentState);
         }
     }
 
