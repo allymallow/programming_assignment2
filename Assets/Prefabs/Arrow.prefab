@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: a64ad6525da61964482f614a4caee7de, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.7024033
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a64ad6525da61964482f614a4caee7de, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.033874936
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a64ad6525da61964482f614a4caee7de, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.09783
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a64ad6525da61964482f614a4caee7de, type: 3}
       propertyPath: m_LocalRotation.w
@@ -52,6 +52,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Arrow
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a64ad6525da61964482f614a4caee7de, type: 3}
+      propertyPath: m_TagString
+      value: Arrow
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a64ad6525da61964482f614a4caee7de, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -64,7 +72,7 @@ PrefabInstance:
       addedObject: {fileID: 3646551633346446079}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a64ad6525da61964482f614a4caee7de, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4904485785002634744}
+      addedObject: {fileID: 5975431544570063234}
   m_SourcePrefab: {fileID: 100100000, guid: a64ad6525da61964482f614a4caee7de, type: 3}
 --- !u!1 &1719790517781520501 stripped
 GameObject:
@@ -113,7 +121,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -121,7 +129,7 @@ CapsuleCollider:
   m_Height: 0.8255315
   m_Direction: 2
   m_Center: {x: 0.00083321333, y: 0.012115426, z: -0.02234912}
---- !u!114 &4904485785002634744
+--- !u!114 &5975431544570063234
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -130,6 +138,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1719790517781520501}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9df93db3178aec543a604832cad588cb, type: 3}
+  m_Script: {fileID: 11500000, guid: ab0882b938ca70442aee5c28576f418d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'

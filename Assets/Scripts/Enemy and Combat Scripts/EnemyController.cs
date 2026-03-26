@@ -1,38 +1,27 @@
+using System;
 using DG.Tweening;
-using UnityEditor.UI;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-
-   [Header("Enemy Movement")]
-    [SerializeField] private Transform enemyPrefab;
-    [SerializeField] private float enemyHealth;
-    [SerializeField] private float moveSpeed;
-    [SerializeField] private float rotateSpeed;
-    [SerializeField] private float jumpHeight;
-
-    [SerializeField] private LayerMask PlayerLayer;
-
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (gameObject.CompareTag("Player"))
-        {
-            
-        }
-    }
+    public static event Action<int> EnemyDestroyed; // event to allow GameManager to increment score
+    public int Score = 1; //value to be incremented in GameManager
     
-    
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private Rigidbody _rb;
     void Start()
     {
-        
+        _rb = GetComponent<Rigidbody>();
+    }
+    
+    void OnTriggerEnter(Collider other)
+    {
+            OnDestroyed(); // destroy the enemy when hit by trigger object (arrow)
     }
 
-    // Update is called once per frame
-    void Update()
+    void OnDestroyed()
     {
+        Destroy(gameObject);
+        EnemyDestroyed?.Invoke(Score); //broadcast event
         
     }
 }
