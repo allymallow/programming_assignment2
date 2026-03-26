@@ -463,9 +463,20 @@
                 },
                 {
                     "name": "",
+                    "id": "6b262236-4b8c-4465-9542-9d8fa4403bf0",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "Press(behavior=2)",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Aim",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "435230a2-fe91-4e2a-8b39-05296febe4e1",
-                    "path": "<Keyboard>/escape",
-                    "interactions": "",
+                    "path": "<Keyboard>/ctrl",
+                    "interactions": "Press",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "Pause",

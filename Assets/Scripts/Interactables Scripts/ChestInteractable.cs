@@ -1,8 +1,11 @@
+using System;
 using DG.Tweening;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class ChestInteractable : MonoBehaviour, IInteractable
 {
+    //Setting the chest animation variables for DOTween, with assistance from lab instructors
     [SerializeField] private Ease ease;
 
     [Header("Chest Opening/Close Settings")]
@@ -13,7 +16,10 @@ public class ChestInteractable : MonoBehaviour, IInteractable
     private Tween _collectTween;
    private Tween _openLidTween;
     private Tween _loopTween;
-    private int isOpenHash;
+    private int _isOpenHash;
+    
+    public static event Action<int> ChestDestroyed; //event to allow score to increase in GameManager
+    public int Score = 1; //value to be added to the score in GameManager
 
     private void Start()
     {
@@ -50,5 +56,7 @@ public class ChestInteractable : MonoBehaviour, IInteractable
     {
         //Change scale then destroy chest once interacted with
         _collectTween = transform.DOScale(0, .5f).SetEase(Ease.InBack).OnComplete(() => { Destroy(gameObject); });
+        ChestDestroyed.Invoke(Score);
     }
+    
 }

@@ -14,7 +14,8 @@ public class Arrows : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        _rb.rotation = Quaternion.LookRotation(_rb.linearVelocity);
+        //ensuring arrows shoot in the direction camera and player are facing
+        _rb.rotation = Quaternion.LookRotation(_rb.linearVelocity); 
     }
 
     void DestroyAfter()

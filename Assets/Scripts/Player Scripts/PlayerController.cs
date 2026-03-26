@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+   
     [Header("Player Movement")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float moveSpeed = 2;
@@ -20,10 +21,8 @@ public class PlayerController : MonoBehaviour
     
     
     [Header("Aim Movement")]
-    
     [SerializeField] private float moveSpeedAimed = 2;
     [SerializeField] private float rotationSpeedAimed = 10;
-    [SerializeField] private float sprintSpeedAimed;
     [SerializeField] private Transform aimTrack;
     [SerializeField] private float maxAimHeight;
     [SerializeField] private float minAimHeight;
@@ -34,20 +33,21 @@ public class PlayerController : MonoBehaviour
     
     [Header("Camera")]
     private Vector2 _moveInput;
-
     private Vector2 _lookInput;
     private Vector3 _camForward;
     private Vector3 _camRight;
     private Vector3 _moveDirection;
     private CharacterController _characterController;
     
-    
     private Quaternion _targetRotation;
     private Vector3 _velocity;
     private bool _isGrounded;
-    
+
+    private Vector3 _defaultAimTrackerPosition;
+    private Vector3 _tempAimTrackerPosition;
     
     private PlayerState _currentState;
+    
 
     public bool IsGrounded()
     {
@@ -67,13 +67,22 @@ public class PlayerController : MonoBehaviour
         _currentState = PlayerState.EXPLORE; // setting the player's default state
         OnStateUpdated?.Invoke(_currentState);
 
-
+        _defaultAimTrackerPosition = aimTrack.localPosition;
     }
 
     // Update is called once per frame
     void Update()
     {
-        CalculateMovement();
+        if (_currentState == PlayerState.EXPLORE)
+        {
+             CalculateMovementExplore();
+        }
+        else if (_currentState == PlayerState.AIM)
+        {
+            CalculateMovementAim();
+            UpdateAimTrack();
+        }
+       
         _characterController.Move(_velocity * Time.deltaTime);
     }
 
@@ -90,12 +99,17 @@ public class PlayerController : MonoBehaviour
     {
         _moveInput = value.Get<Vector2>();
     }
+    
+    
+    public void OnLook(InputValue value)
+    {
+        _lookInput = value.Get<Vector2>();
+    }
 
     public void OnJump()
     {
         if(_isGrounded)
         {
-            Debug.Log("JUMP");
             _velocity.y = jumpVelocity;
             OnJumpEvent?.Invoke();
         }
@@ -103,19 +117,22 @@ public class PlayerController : MonoBehaviour
 
     public void OnAim(InputValue value)
     {
-        if (value.isPressed)
+        //setting the state based on whether or not "shift" or Right mouse is pressed
+        _currentState = value.isPressed ? PlayerState.AIM : PlayerState.EXPLORE;
+        OnStateUpdated?.Invoke(_currentState);
+
+        //rotate the player to the camera direction when entering aim state
+        if (_currentState == PlayerState.AIM)
         {
-            _currentState = PlayerState.AIM;
-            OnStateUpdated?.Invoke(_currentState);
+            _camForward = playerCamera.transform.forward;
+            _camForward.y = 0;
+            _camForward.Normalize();
+            transform.rotation = Quaternion.LookRotation(_camForward);
         }
-        else
-        {
-            _currentState = PlayerState.EXPLORE;
-            OnStateUpdated?.Invoke(_currentState);
-        }
+        OnStateUpdated?.Invoke(_currentState);
     }
 
-    private void CalculateMovement()
+    private void CalculateMovementExplore()
     {
         _camForward = playerCamera.transform.forward;
         _camRight = playerCamera.transform.right;
@@ -124,7 +141,7 @@ public class PlayerController : MonoBehaviour
         _camForward.Normalize();
         _camRight.Normalize();
 
-        _moveDirection = _camRight * _moveInput.x + _camForward * _moveInput.y;
+        _moveDirection = _moveInput.x * _camRight + _moveInput.y * _camForward;
 
         if(_moveDirection.sqrMagnitude > 0.01f)
         {
@@ -135,9 +152,28 @@ public class PlayerController : MonoBehaviour
         //Calculate gravity
         _velocity = Vector3.up * _velocity.y + _moveDirection * moveSpeed;
         _velocity.y += gravity * Time.deltaTime;
+    }
 
+    private void CalculateMovementAim()
+    {
+        //rotate the player around the Y axis based on horizontal input
+        transform.Rotate(Vector3.up, rotationSpeed * _lookInput.x * Time.deltaTime);
         
-        
+        //WASD relates to where player is currently facing for strafe
+        _moveDirection =  _moveInput.x * transform.right + _moveInput.y * transform.forward;
+
+        _velocity = _velocity.y * Vector3.up + moveSpeedAimed * _moveDirection;
+        _velocity.y += gravity * Time.deltaTime;
+    }
+
+    private float _tempAimTrackY;
+
+    private void UpdateAimTrack()
+    {
+        _tempAimTrackerPosition = aimTrack.localPosition;
+        _tempAimTrackerPosition.y += _lookInput.y * rotationSpeedAimed * Time.deltaTime;
+        _tempAimTrackerPosition.y = Mathf.Clamp(_tempAimTrackerPosition.y, minAimHeight, maxAimHeight);
+        aimTrack.localPosition = _tempAimTrackerPosition;
     }
 
     private void CheckGrounded()
